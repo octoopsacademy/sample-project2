@@ -79,6 +79,7 @@ stage('Configure AWS & Kubeconfig') {
 
                     kubectl apply -f k8s/backend.yaml
                     kubectl apply -f k8s/frontend.yaml
+                    kubectl apply -f k8s/ingress.yaml
 
                     kubectl rollout restart deployment octoops-frontend
                     kubectl rollout restart deployment octoops-backend
