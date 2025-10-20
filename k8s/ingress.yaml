@@ -3,14 +3,12 @@ kind: Ingress
 metadata:
   name: octoops-ingress
   annotations:
-    # no rewrite, explicit paths below
     nginx.ingress.kubernetes.io/use-regex: "false"
 spec:
   ingressClassName: nginx
   rules:
   - http:
       paths:
-        # API explicit routes (exact prefixes)
         - path: /api/users
           pathType: Prefix
           backend:
@@ -34,8 +32,6 @@ spec:
               name: octoops-backend-service
               port:
                 number: 3000
-
-        # If you use DELETE with /api/users/:id, the prefix /api/users will match it
         - path: /api
           pathType: Prefix
           backend:
@@ -43,8 +39,6 @@ spec:
               name: octoops-backend-service
               port:
                 number: 3000
-
-        # Frontend catch-all (everything else)
         - path: /
           pathType: Prefix
           backend:
