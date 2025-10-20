@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>OctoopsAcademy</title>
+<style>
+  :root{--bg:#0f172a;--card:#111827;--accent:#06b6d4;--accent2:#e879f9}
+  body{margin:0;font-family:Inter,system-ui;background:linear-gradient(135deg,var(--bg),#071021);color:#e6eef8}
+  header{padding:2rem;text-align:center}
+  h1{font-size:2.2rem;margin:0;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .wrap{max-width:900px;margin:1rem auto;padding:1rem}
+  .card{background:rgba(255,255,255,0.03);padding:1.1rem;border-radius:12px;box-shadow:0 6px 20px rgba(2,6,23,0.6);}
+  form{display:grid;grid-template-columns:1fr 1fr auto;gap:0.6rem;align-items:center}
+  input{padding:0.6rem;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
+  button{padding:0.65rem 1rem;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#042027;font-weight:600;cursor:pointer}
+  .list{margin-top:1rem}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:0.6rem;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03)}
+  .small{font-size:0.9rem;color:#9fb0c9}
+  footer{margin-top:2rem;text-align:center;color:#9fb0c9}
+</style>
+</head>
+<body>
+<header>
+<h1>OctoopsAcademy</h1>
+<p class="small">Add your details — accessible publicly (no login)</p>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <h3>Add your details</h3>
+    <form id="addForm">
+      <input id="name" placeholder="Your name" required />
+      <input id="email" placeholder="Your email" type="email" required />
+      <button type="submit">Add</button>
+    </form>
+    <p id="msg" class="small"></p>
+  </div>
+
+  <div class="card list">
+    <h3>User list</h3>
+    <div id="users">Loading...</div>
+  </div>
+</div>
+
+<footer>
+  <span class="small">© OctoopsAcademy</span>
+</footer>
+
+<script>
+const API_BASE = 'http://octoops-backend-service:3000/api';
+
+async function fetchUsers(){
+  try{
+    const res = await fetch(API_BASE + '/users');
+    if(!res.ok) throw new Error('fetch failed');
+    const data = await res.json();
+    const el = document.getElementById('users');
+    if(!data.length) el.innerHTML = '<p class="small">No users yet.</p>';
+    else{
+      const rows = data.map(u=>`
+        <tr>
+          <td>${escapeHtml(u.name)}</td>
+          <td>${escapeHtml(u.email)}</td>
+          <td class="small">${new Date(u.created_at).toLocaleString()}</td>
+          <td><button onclick="deleteUser(${u.id})">Delete</button></td>
+        </tr>
+      `).join('');
+      el.innerHTML = `<table><thead><tr><th>Name</th><th>Email</th><th>Added</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+  }catch(e){document.getElementById('users').innerText='Could not load users.'}
+}
+
+function escapeHtml(s){return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+document.getElementById('addForm').addEventListener('submit', async (ev)=>{
+  ev.preventDefault();
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  if(!name||!email) return;
+  const msg = document.getElementById('msg');
+  msg.textContent='Submitting...';
+  try{
+    const res = await fetch(API_BASE + '/addUser',{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email})
+    });
+    if(!res.ok) throw new Error('failed');
+    msg.textContent='Saved!';
+    document.getElementById('name').value='';document.getElementById('email').value='';
+    await fetchUsers();
+    setTimeout(()=>msg.textContent='',2000);
+  }catch(e){msg.textContent='Error saving';}
+});
+
+async function deleteUser(id){
+  if(!confirm('Delete this user?')) return;
+  await fetch(API_BASE + '/users/' + id,{method:'DELETE'});
+  await fetchUsers();
+}
+
+fetchUsers();
+</script>
+</body>
+</html>
+
