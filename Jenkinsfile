@@ -77,8 +77,8 @@ stage('Configure AWS & Kubeconfig') {
                     sed -i "s|image:.*|image: $BACKEND_ECR:latest|" k8s/backend.yaml
                     sed -i "s|image:.*|image: $FRONTEND_ECR:latest|" k8s/frontend.yaml
 
-                    kubectl apply -f k8s/deployment.yaml
-                    kubectl apply -f k8s/service.yaml
+                    kubectl apply -f k8s/backend.yaml
+                    kubectl apply -f k8s/frontend.yaml
 
                     kubectl rollout restart deployment octoops-frontend
                     kubectl rollout restart deployment octoops-backend
