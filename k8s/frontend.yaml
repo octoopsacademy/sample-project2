@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: <dockerhub-user>/octoops-frontend:latest
+        image: 657399551937.dkr.ecr.ap-south-1.amazonaws.com/octoops-frontend:latest
         ports:
         - containerPort: 80
 ---
